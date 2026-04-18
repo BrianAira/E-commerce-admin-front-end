@@ -1,74 +1,65 @@
-import React, { useState } from "react"
-import { useLogin } from "../hooks/useLogin";
-import { Link } from "react-router-dom";
+import { AuthForm } from "../../../components/ui/AuthForm";
+import { Link } from "react-router"; // Asegúrate de que sea 'react-router-dom' si usas v6
+import { useAuth } from "../hooks/useAuth";
+import { LoadingComponent } from "../../../components/Layout/LoadingComponent";
+import { Card, CardBody } from "@heroui/react";
 
+export const LoginPage = () => {
+  const { login, isLoading, error } = useAuth();
 
-export const LoginPage=()=>{
-    const [email, setEmail]=useState("");
-    const [password, setPassword]=useState("");
-    
-    const loginMutation=useLogin();
+  const handleLogin = async (data: Record<string, string>) => {
+    await login({
+      username: data.email, 
+      password: data.password
+    });
+  };
 
-    const handleSubmit=(e:React.FormEvent)=>{
-        e.preventDefault();
-        loginMutation.mutate({email, password});
-    };
+  if (isLoading) {
+    return <LoadingComponent />;
+  }
 
-    return (
-        <div 
-        className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 p-4">
+  return (
+    // bg-background se ajusta solo a blanco o negro según el tema
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 transition-colors duration-500">
+      
+      {/* Envolvemos el AuthForm en un Card para darle profundidad. 
+        En modo oscuro, HeroUI le da un borde sutil muy pro. 
+      */}
+      <Card className="w-full max-w-md shadow-2xl border-none bg-content1">
+        <CardBody className="p-8">
+          <div className="flex flex-col gap-2 mb-8 text-center">
+            <h1 className="text-2xl font-bold text-foreground">Bienvenido a Mi Odisea</h1>
+            <p className="text-small text-default-500">Introduce tus credenciales para gestionar la tienda</p>
+          </div>
 
-        
-        <div
-        className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl overflow-y-auto max-h-[90vh]" 
-        // className="max-w-md mx-auto mt-10 p-6 border rounded shadow"
-        >
-            <h2 
-            className="text-3xl font-extrabold text-gray-900 mb-8 text-center"
-            // className="text-3xl font-bold mb-4"
-            >
-                Login
-            </h2>
-            <form onSubmit={handleSubmit} 
-            // className="flex flex-col gap-4"
-            className="space-y-6"
-            >
-                <label htmlFor="email" className="block font-medium mb-2 text-gray-700">Email</label>
-                <input type="email" 
-                placeholder="usuario@gmail.com"
-                value={email}
-                onChange={(e)=>setEmail(e.target.value)}
-                className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 transition "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
-              }`}
-                // className="border p-2 rounded"
-                />
-                <label htmlFor="password" className="block font-medium mb-2 text-gray-700">Contraseña</label>
-                <input type="password" 
-                placeholder="••••••••"
-                value={password}
-                onChange={(e)=>setPassword(e.target.value)}
-                className={`w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 transition  ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
-                }`}
+          <AuthForm
+            onSubmit={handleLogin}
+            submitLabel={isLoading ? "Iniciando sesión..." : "Entrar al Panel"}
+            fields={[
+              { name: "email", label: "Correo electrónico", type: "email" },
+              { name: "password", label: "Contraseña", type: "password" },
+            ]}
+          />
 
-                />
-                <button 
-                type="submit"
-                className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-                >
-                    {loginMutation.isPending? "Cargando...": "Login"}
-                </button>
-            </form>
-
-            {loginMutation.isError && (
-                <p className="text-red-500 mt-2">{loginMutation.error.message}</p>
-            )}
-
-            <div>
-                <p className="mt-4 text-center">¿No tienes cuenta?{""}</p>
-
-                <Link to={"/auth/register"} className="text-blue-500 hover:underline">Crear una</Link>
+          {error && (
+            <div className="mt-4 p-3 rounded-lg bg-danger-50 border border-danger-100">
+              <p className="text-xs text-danger font-semibold text-center">{error}</p>
             </div>
-        </div>
-        </div>
-    )
-}
+          )}
+        </CardBody>
+      </Card>
+
+      <div className="mt-8 text-center">
+        <p className="text-sm text-default-500">
+          ¿No tienes cuenta de administrador?{" "}
+          <Link to="/register" className="text-primary font-bold hover:underline transition-all">
+            Solicitar acceso
+          </Link>
+        </p>
+      </div>
+
+      {/* Decoración sutil de fondo para quitar lo "plano" */}
+      <div className="fixed bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary opacity-50" />
+    </div>
+  );
+};
