@@ -1,25 +1,56 @@
-import React from "react";
+import  { useState } from "react";
+import { Button, useDisclosure } from "@heroui/react";
+import { FiPlus } from "react-icons/fi";
+import { ProductsTable } from "../components/ProductsTable";
+import { ProductDetailModal } from "../components/ProductDetailModal";
+import { type IProduct } from "../types/product";
+import { CreateProductModal } from "../components/CreateProductModal";
 
-const ProductsPage: React.FC = () => {
+export const ProductsPage = () => {
+  // Estado para el modal y el producto seleccionado
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
+const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
+  const handleEdit = (product: IProduct) => {
+    setSelectedProduct(product);
+    setIsOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setSelectedProduct(null);
+  };
+
   return (
-    <div>
-      <div className="mb-6">
-        <h3 className="text-2xl font-semibold">Productos</h3>
-        <p className="text-sm text-slate-400">Maneja tu catalogo de productos (solo visual)</p>
+    <div className="p-6 flex flex-col gap-6">
+      {/* Header de la página */}
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Gestión de Productos</h1>
+          <p className="text-default-400 text-small">Administra el inventario y variantes de Educart</p>
+        </div>
+        <Button 
+          color="primary" 
+          startContent={<FiPlus />} 
+          onPress={() => onCreateOpen()} // Aquí abrirías un modal de "Crear"
+        >
+          Nuevo Producto
+        </Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {/* simple placeholders */}
-        {[1,2,3,4,5,6].map((i) => (
-          <div key={i} className="bg-white p-4 rounded-lg border border-slate-100">
-            <div className="h-36 bg-slate-50 rounded-md mb-3 flex items-center justify-center text-slate-400">Image</div>
-            <div className="font-medium">Product {i}</div>
-            <div className="text-sm text-slate-500 mt-1">$ {10 * i}</div>
-          </div>
-        ))}
-      </div>
+      {/* Tabla de Productos */}
+      <ProductsTable onEdit={handleEdit} />
+
+      {/* Modal de Detalle (Solo se renderiza si hay un producto o si es creación) */}
+      {selectedProduct && (
+        <ProductDetailModal 
+          isOpen={isOpen} 
+          onClose={handleClose} 
+          product={selectedProduct} 
+        />
+      )}
+
+      <CreateProductModal isOpen={isCreateOpen} onClose={onCreateClose}></CreateProductModal>
     </div>
   );
 };
-
-export default ProductsPage;
